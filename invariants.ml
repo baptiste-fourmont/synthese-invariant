@@ -22,6 +22,8 @@ type program = {nvars : int;
 
 let x n = "x" ^ string_of_int n
 
+
+
 (* Question 1. Écrire des fonctions `str_of_term` et `str_of_term` qui
    convertissent des termes et des tests en chaînes de caractères du
    format SMTLIB.
@@ -29,9 +31,15 @@ let x n = "x" ^ string_of_int n
   Par exemple, str_of_term (Var 3) retourne "x3", str_of_term (Add
    (Var 1, Const 3)) retourne "(+ x1 3)" et str_of_test (Equals (Var
    2, Const 2)) retourne "(= x2 2)".  *)
-let rec str_of_term t = "TODO" (* À compléter *)
+let rec str_of_term t = match t with 
+ | Const(y) -> string_of_int y
+ | Var(y) -> x y
+ | Add(y, z) -> "(+ "^(str_of_term y)^ " "^(str_of_term z)^")"
+ | Mult(y, z) -> "(* "^(str_of_term y)^" "^(str_of_term z)^")"
 
-let str_of_test t = "TODO" (* À compléter *)
+let str_of_test t = match t with 
+  | Equals(y, z) -> "(* "^(str_of_term y)^" "^(str_of_term z)^")"
+  | LessThan(y, z) -> "(< "^(str_of_term y)^" "^(str_of_term z)^")"
 
 let string_repeat s n =
   Array.fold_left (^) "" (Array.make n s)
@@ -52,6 +60,8 @@ let str_condition l = "TODO" (* À compléter *)
    (forall ((x1 Int) (x2 Int)) (< x1 x2)))".  *)
 
 let str_assert s = "(assert " ^ s ^ ")"
+
+
 
 let str_assert_forall n s = "TODO" (* À compléter *)
 
