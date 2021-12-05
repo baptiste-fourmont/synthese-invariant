@@ -66,9 +66,13 @@ let str_condition l =
 
 let str_assert s = "(assert " ^ s ^ ")"
 
-
-
-let str_assert_forall n s = "TODO" (* À compléter *)
+let str_assert_forall n s = 
+  let rec loop str accu = match str with
+  | [] -> str_assert ( "(forall (" ^accu ^")" ^ " (" ^ s ^ "))" )
+  | hd :: tl -> match tl with
+    | [] -> loop tl (accu ^ "(" ^hd^ " Int)") 
+    | _ -> loop tl (accu ^ "(" ^hd^ " Int) " ) 
+  in loop (List.tl (String.split_on_char ' ' s)) ""
 
 (* Question 4. Nous donnons ci-dessous une définition possible de la
    fonction smt_lib_of_wa. Complétez-la en écrivant les définitions de
