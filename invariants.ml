@@ -85,6 +85,12 @@ let  g n =
     | _-> loop (n-1) ((Var n)::acc)
   in loop n []
 
+  let f t = 
+  match t with
+  |Equals(term1, term2)-> (term1, term2)
+  |LessThan(term1, term2) -> (term1,term2) 
+                             
+
 
   let p = {nvars =2; inits =[Const (0); Const(0)];
          mods = [Add(Var(1), Const(1)); Add(Var(2), Const(3))];
@@ -99,15 +105,16 @@ let loop_condition p =
     str_of_test(p.loopcond)
     ^ ")") 
 
-(*
-  let assertion_condition p =
-    "; l'assertion finale est vérifiée\n"
-   ^";"^str_assert_forall p.nvars ("=> ("
-    ^str_condition (g p.nvars))   
-    ^str_of_test (p.loopcond)
-    ^"(< "^(str_of_term  g 0)^" "^(str_of_term z)^")"
-    *)
 
+let assertion_condition p = let a = f p.loopcond in
+  str_assert_forall p.nvars ("=> (and "
+                             ^str_condition (g p.nvars)
+                             ^" "
+                             ^"(>= "^
+                             str_of_term(fst(a))
+                             ^" "^str_of_term(snd(a))^")"
+                             ^ ") "^str_of_test(p.assertion)) 
+    
   let initial_condition p =
     "; la relation Invar est vraie initialement\n"
     ^str_assert (str_condition p.inits)  
@@ -128,8 +135,15 @@ let smtlib_of_wa p =
     "; la relation Invar est vraie initialement\n"
     ^str_assert (str_condition p.inits) in
   let assertion_condition p =
+     let a = f p.loopcond in
     "; l'assertion finale est vérifiée\n"
-    ^"TODO" (* À compléter *) in
+    ^str_assert_forall p.nvars ("=> (and "
+                             ^str_condition (g p.nvars)
+                             ^" "
+                             ^"(>= "^
+                             str_of_term(fst(a))
+                             ^" "^str_of_term(snd(a))^")"
+                             ^ ") "^str_of_test(p.assertion)) in
   let call_solver =
     "; appel au solveur\n(check-sat-using (then qe smt))\n(get-model)\n(exit)\n" in
   String.concat "\n" [declare_invariant p.nvars;
@@ -152,7 +166,7 @@ let () = Printf.printf "%s" (smtlib_of_wa p1)
    un autre programme test, et vérifiez qu'il donne un fichier SMTLIB
    de la forme attendue. *)
 
-let p2 = None (* À compléter *)
+
 let p2 = {nvars = 2;
           inits = [(Const 0) ; (Const 0)];
           mods = [Add ((Var 1), (Const 1)); Add ((Var 2), (Const 3))];
