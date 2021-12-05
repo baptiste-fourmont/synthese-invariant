@@ -38,7 +38,7 @@ let rec str_of_term t = match t with
  | Mult(y, z) -> "(* "^(str_of_term y)^" "^(str_of_term z)^")"
 
 let str_of_test t = match t with 
-  | Equals(y, z) -> "(* "^(str_of_term y)^" "^(str_of_term z)^")"
+  | Equals(y, z) -> "(= "^(str_of_term y)^" "^(str_of_term z)^")"
   | LessThan(y, z) -> "(< "^(str_of_term y)^" "^(str_of_term z)^")"
 
 let string_repeat s n =
@@ -78,14 +78,52 @@ let str_assert_forall n s =
    fonction smt_lib_of_wa. Complétez-la en écrivant les définitions de
    loop_condition et assertion_condition. *)
 
+let  g n =
+  let rec loop n acc = 
+    match n with 
+    | 0-> acc 
+    | _-> g2 (n-1) ((Var n)::acc)
+  in loop n []
+
+
+  let p = {nvars =2; inits =[Const (0); Const(0)];
+         mods = [Add(Var(1), Const(1)); Add(Var(2), Const(3))];
+         loopcond = LessThan(Var(1), Const(3));
+         assertion = Equals(Var(2), Const(9))}
+
+let loop_condition p =
+    str_assert_forall p.nvars ("=> (and "
+    ^str_condition (g p.nvars)
+    ^" "
+    ^""^
+    str_of_test(p.loopcond)
+    ^ ")") 
+
+(*
+  let assertion_condition p =
+    "; l'assertion finale est vérifiée\n"
+   ^";"^str_assert_forall p.nvars ("=> ("
+    ^str_condition (g p.nvars))   
+    ^str_of_test (p.loopcond)
+    ^"(< "^(str_of_term  g 0)^" "^(str_of_term z)^")"
+    *)
+
+  let initial_condition p =
+    "; la relation Invar est vraie initialement\n"
+    ^str_assert (str_condition p.inits)  
+
 let smtlib_of_wa p = 
   let declare_invariant n =
     "; synthèse d'invariant de programme\n"
     ^"; on déclare le symbole non interprété de relation Invar\n"
     ^"declare-fun Invar (" ^ string_repeat "Int " n ^  ") Bool)" in
   let loop_condition p =
-    "; la relation Invar est un invariant de boucle\n"
-    ^"TODO" (* À compléter *) in
+    str_assert_forall p.nvars ("=> (and "
+    ^str_condition (g p.nvars)
+    ^" "
+    ^""^
+    str_of_test(p.loopcond)
+    ^ ")") in 
   let initial_condition p =
     "; la relation Invar est vraie initialement\n"
     ^str_assert (str_condition p.inits) in
@@ -99,12 +137,11 @@ let smtlib_of_wa p =
                       initial_condition p;
                       assertion_condition p;
                       call_solver]
-
-let p1 = {nvars = 2;
-          inits = [(Const 0) ; (Const 0)];
-          mods = [Add ((Var 1), (Const 1)); Add ((Var 2), (Const 3))];
-          loopcond = LessThan ((Var 1),(Const 3));
-          assertion = Equals ((Var 2),(Const 9))}
+let p1 = {nvars =2; inits =[Const (0); Const(0)];
+         mods = [Add(Var(1), Const(1)); Add(Var(2), Const(3))];
+         loopcond = LessThan(Var(1), Const(3));
+         assertion = Equals(Var(2), Const(9))}
+        
 
 
 let () = Printf.printf "%s" (smtlib_of_wa p1)
@@ -116,3 +153,8 @@ let () = Printf.printf "%s" (smtlib_of_wa p1)
    de la forme attendue. *)
 
 let p2 = None (* À compléter *)
+let p2 = {nvars = 2;
+          inits = [(Const 0) ; (Const 0)];
+          mods = [Add ((Var 1), (Const 1)); Add ((Var 2), (Const 3))];
+          loopcond = LessThan ((Var 1),(Const 3));
+          assertion = Equals ((Var 2),(Const 9))}
