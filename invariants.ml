@@ -82,7 +82,7 @@ let  g n =
   let rec loop n acc = 
     match n with 
     | 0-> acc 
-    | _-> g2 (n-1) ((Var n)::acc)
+    | _-> loop (n-1) ((Var n)::acc)
   in loop n []
 
 
