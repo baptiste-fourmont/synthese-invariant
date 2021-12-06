@@ -96,6 +96,7 @@ let smtlib_of_wa p =
     "; synthèse d'invariant de programme\n"
     ^"; on déclare le symbole non interprété de relation Invar\n"
     ^"(declare-fun Invar (" ^ string_repeat "Int " n ^  ") Bool)" in
+
   let loop_condition p =
     let transform_mods (list: term list): string = 
       let rec loop l accu = match l with 
@@ -104,7 +105,7 @@ let smtlib_of_wa p =
       in loop list ""
     in
     str_assert_forall p.nvars ("=> (and "
-                               ^str_condition (get_terms p.nvars)
+                              ^str_condition (get_terms p.nvars)
                                ^" "
                                ^""^
                                str_of_test(p.loopcond)
@@ -113,29 +114,37 @@ let smtlib_of_wa p =
   let initial_condition p =
     "; la relation Invar est vraie initialement\n"
     ^str_assert (str_condition p.inits) in
+
   let assertion_condition p =
-    let a = check_condition p.loopcond in 
+    let cnd = check_condition p.loopcond in 
     "; l'assertion finale est vérifiée\n"
     ^str_assert_forall p.nvars ("=> (and "
                                 ^str_condition (get_terms p.nvars)
                                 ^" "
                                 ^"(>= "^
-                                str_of_term(fst(a))
-                                ^" "^str_of_term(snd(a))^")"
+                                str_of_term(fst(cnd))
+                                ^" "^str_of_term(snd(cnd))^")"
                                 ^""
                                 ^ ") "^str_of_test(p.assertion)) in
   let call_solver =
     "; appel au solveur\n(check-sat-using (then qe smt))\n(get-model)\n(exit)\n" in
+
   String.concat "\n" [declare_invariant p.nvars;
                       loop_condition p;
                       initial_condition p;
                       assertion_condition p;
                       call_solver]
+
 let p1 = {nvars =2; inits =[Const (0); Const(0)];
           mods = [Add(Var(1), Const(1)); Add(Var(2), Const(3))];
           loopcond = LessThan(Var(1), Const(3));
           assertion = Equals(Var(2), Const(9))}
         
+(* Question 5. Vérifiez que votre implémentation donne un fichier
+   SMTLIB qui est équivalent au fichier que vous avez écrit à la main
+   dans l'exercice 1. Ajoutez dans la variable p2 ci-dessous au moins
+   un autre programme test, et vérifiez qu'il donne un fichier SMTLIB
+   de la forme attendue. *)
 
 let p2 = {nvars = 2;
           inits = [(Const 0) ; (Const 1)];
@@ -144,10 +153,4 @@ let p2 = {nvars = 2;
           assertion = Equals ((Var 2),(Const 9))}
 
 let () = Printf.printf "%s" (smtlib_of_wa p1)
-
-(* Question 5. Vérifiez que votre implémentation donne un fichier
-   SMTLIB qui est équivalent au fichier que vous avez écrit à la main
-   dans l'exercice 1. Ajoutez dans la variable p2 ci-dessous au moins
-   un autre programme test, et vérifiez qu'il donne un fichier SMTLIB
-   de la forme attendue. *)
 
