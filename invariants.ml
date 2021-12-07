@@ -47,6 +47,7 @@ let string_repeat s n =
    exprime que le tuple (t1, ..., tk) est dans l'invariant.  Par
    exemple, str_condition [Var 1; Const 10] retourne "(Invar x1 10)".
 *)
+
 let str_condition l =
   let rec loop l accu = match l with
     | [] -> accu ^ ")"
@@ -59,7 +60,6 @@ let str_condition l =
    l'expression SMTLIB qui correspond à la formule "forall x1 ... xk
    (s)".
 *)
-
 let str_assert s = "(assert " ^ s ^ ")"
 
 let str_assert_forall n s =
@@ -78,8 +78,7 @@ let str_assert_forall n s =
 (* Question 4. Nous donnons ci-dessous une définition possible de la
    fonction smt_lib_of_wa. Complétez-la en écrivant les définitions de
    loop_condition et assertion_condition. *)
-
-                             
+      
 let smtlib_of_wa p =
 
   let check_condition t = match t with
@@ -87,10 +86,10 @@ let smtlib_of_wa p =
   | LessThan(y, z) -> (y, z) in
 
   let get_terms n =
-    let rec loop n acc = match n with 
-    | 0 -> acc 
-    | _ -> loop (n-1) ((Var n)::acc)
-  in loop n [] in
+    let rec loop accu num = match num with 
+    | 0 -> accu 
+    | _ -> loop ( (Var num) :: accu ) ( num-1 )
+  in loop [] n in
 
   let declare_invariant n =
     "; synthèse d'invariant de programme\n"
